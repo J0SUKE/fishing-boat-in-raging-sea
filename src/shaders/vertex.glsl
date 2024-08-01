@@ -3,7 +3,8 @@ uniform float uTime;
 
 float elevation(vec3 position)
 {
-    return sin(-position.z*3. + position.x*3. + uTime)*0.25;
+    //return sin(-position.x*3. - uTime)*0.1;
+    return 0.;
 }
 
 void main()

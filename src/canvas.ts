@@ -2,7 +2,8 @@ import * as THREE from 'three'
 import { Dimensions, Size } from './types/types'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import GUI from 'lil-gui'
-import Sea from './sea'
+import Sea from './components/sea'
+import Boat from './components/boat'
 
 export default class Canvas {
   element: HTMLCanvasElement
@@ -32,6 +33,7 @@ export default class Canvas {
     this.addEventListeners()
     this.createDebug()
     this.createSea()
+    this.createBoat()
     this.createHelpers()
     this.render()
   }
@@ -59,12 +61,14 @@ export default class Canvas {
       pixelRatio: Math.min(2, window.devicePixelRatio),
     }
 
-    this.renderer = new THREE.WebGLRenderer({ canvas: this.element, alpha: true })
+    this.renderer = new THREE.WebGLRenderer({ canvas: this.element, alpha: true, antialias: true })
     this.renderer.setSize(this.dimensions.width, this.dimensions.height)
     this.renderer.render(this.scene, this.camera)
 
     this.renderer.setPixelRatio(this.dimensions.pixelRatio)
-    this.renderer.setClearColor('#171717')
+
+    this.renderer.outputColorSpace = THREE.SRGBColorSpace
+    //this.renderer.outp
   }
 
   createDebug() {
@@ -123,12 +127,19 @@ export default class Canvas {
     this.renderer.setSize(this.dimensions.width, this.dimensions.height)
   }
 
+  createHelpers() {
+    this.scene.add(new THREE.AxesHelper(1))
+  }
+
+  /*
+   * Create Components
+   */
   createSea() {
     this.sea = new Sea({ scene: this.scene, renderer: this.renderer, camera: this.camera })
   }
 
-  createHelpers() {
-    this.scene.add(new THREE.AxesHelper(1))
+  createBoat() {
+    const boat = new Boat({ scene: this.scene })
   }
 
   render() {
