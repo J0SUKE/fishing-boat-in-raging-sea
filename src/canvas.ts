@@ -69,7 +69,7 @@ export default class Canvas {
     this.renderer.setPixelRatio(this.dimensions.pixelRatio)
 
     this.renderer.outputColorSpace = THREE.SRGBColorSpace
-    //this.renderer.outp
+    //this.renderer.toneMapping = THREE.ACESFilmicToneMapping
   }
 
   createDebug() {

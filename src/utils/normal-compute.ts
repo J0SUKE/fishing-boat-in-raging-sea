@@ -44,6 +44,8 @@ export default class ComputeNormals {
   size: Size
   normalResult: THREE.Vector3
   medianElevation: number
+  normals: THREE.BufferAttribute
+  elevations: THREE.BufferAttribute
 
   //debug canvas
   debugCanvas: HTMLCanvasElement
@@ -100,22 +102,37 @@ export default class ComputeNormals {
     //const elevations = []
     let elevations = 0
 
-    for (let i = 0; i < pixelData.length / 4; i++) {
+    const pixelsCount = pixelData.length / 4
+    const start = Math.floor(pixelsCount * 0)
+    const end = Math.floor(pixelsCount * 1)
+
+    const normalsArray = new Float32Array(pixelsCount * 3)
+    const elevationsArray = new Float32Array(pixelsCount)
+
+    for (let i = 0; i < pixelsCount; i++) {
       const i4 = i * 4
+      const i3 = i * 3
 
       // Convert from [0, 1] to [-1, 1]
-      const x = (pixelData[i4] - 0.5) * 2
-      const y = (pixelData[i4 + 1] - 0.5) * 2
-      const z = (pixelData[i4 + 2] - 0.5) * 2
+      const x = (normalsArray[i3] = (pixelData[i4] - 0.5) * 2)
+      const y = (normalsArray[i3 + 1] = (pixelData[i4 + 1] - 0.5) * 2)
+      const z = (normalsArray[i3 + 2] = (pixelData[i4 + 2] - 0.5) * 2)
+
+      elevationsArray[i] = pixelData[i4 + 3]
 
       //elevations.push(pixelData[i4 + 3])
-      elevations += pixelData[i4 + 3]
+      if (i > start && i < end) {
+        elevations += pixelData[i4 + 3]
+      }
 
       this.normalResult.add(new THREE.Vector3(x, y, z))
     }
 
+    this.normals = new THREE.BufferAttribute(normalsArray, 3)
+    this.elevations = new THREE.BufferAttribute(elevationsArray, 1)
+
     //this.medianElevation = calculateMedian(elevations)
-    this.medianElevation = elevations / (pixelData.length / 4)
+    this.medianElevation = elevations / (end - start)
 
     this.normalResult.normalize()
   }
@@ -125,7 +142,9 @@ export default class ComputeNormals {
   }
 
   getMedianElevation() {
-    return this.medianElevation * 2
+    const strengh = this.normalMaterial.uniforms.uWavesStrengh.value
+
+    return this.medianElevation * 2 + Math.pow(strengh, 3)
   }
 
   /*
@@ -215,6 +234,12 @@ export default class ComputeNormals {
     this.debugCanvasContext.putImageData(imageData, 0, 0)
   }
 
+  getNormals() {
+    return this.normals
+  }
+  getElevations() {
+    return this.elevations
+  }
   /*
    *Visualize Normal Result
    */

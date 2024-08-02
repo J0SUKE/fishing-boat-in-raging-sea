@@ -54,8 +54,8 @@ export default class Boat {
       // to our new direction vector
       quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), force)
 
-      this.model.setRotationFromQuaternion(quaternion)
       this.model.position.y = 0.35 + strength
+      this.model.setRotationFromQuaternion(quaternion)
     }
   }
 }

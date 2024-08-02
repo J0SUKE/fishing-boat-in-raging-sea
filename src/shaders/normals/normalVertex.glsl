@@ -23,10 +23,9 @@ void main()
     
 
 
-    float amplifier = 1.;
-    a.y += waves(a,uWavesStrengh*amplifier,uWavesFreq);
-    b.y += waves(b,uWavesStrengh*amplifier,uWavesFreq);
-    float yWaves = waves(modelPosition.xyz,uWavesStrengh*amplifier,uWavesFreq);
+    a.y += waves(a,uWavesStrengh,uWavesFreq);
+    b.y += waves(b,uWavesStrengh,uWavesFreq);
+    float yWaves = waves(modelPosition.xyz,uWavesStrengh,uWavesFreq);
     
     modelPosition.y += yWaves;    
 
