@@ -19,6 +19,7 @@ export default class Canvas {
   orbitControls: OrbitControls
   debug: GUI
   sea: Sea
+  boat: Boat
 
   constructor() {
     this.element = document.getElementById('webgl') as HTMLCanvasElement
@@ -33,7 +34,7 @@ export default class Canvas {
     this.addEventListeners()
     this.createDebug()
     this.createSea()
-    //this.createBoat()
+    this.createBoat()
     this.createHelpers()
     this.render()
   }
@@ -135,11 +136,11 @@ export default class Canvas {
    * Create Components
    */
   createSea() {
-    this.sea = new Sea({ scene: this.scene, renderer: this.renderer, camera: this.camera })
+    this.sea = new Sea({ scene: this.scene, renderer: this.renderer, camera: this.camera, debug: this.debug })
   }
 
   createBoat() {
-    const boat = new Boat({ scene: this.scene })
+    this.boat = new Boat({ scene: this.scene })
   }
 
   render() {
@@ -148,6 +149,9 @@ export default class Canvas {
     this.orbitControls.update()
 
     this.sea.render(this.time)
+    const force = this.sea.computeNormals.getNormalResult()
+    const strength = this.sea.computeNormals.getMedianElevation()
+    this.boat?.render(force, strength)
 
     this.renderer.render(this.scene, this.camera)
   }

@@ -2,10 +2,12 @@ varying vec3 vNormal;
 uniform float uTime;
 varying float vElevation;
 
-float elevation(vec3 position)
-{
-    return sin(-position.x*3. - uTime)*0.3;    
-}
+uniform float uWavesStrengh;
+uniform vec2 uWavesFreq;
+
+#include ./utils/waves.glsl;
+
+
 
 void main()
 {
@@ -22,18 +24,18 @@ void main()
     b.z -= shift;
     
 
-    a.y += elevation(a);
-    b.y += elevation(b);
-    float yElevation = elevation(modelPosition.xyz);
+    a.y += waves(a,uWavesStrengh,uWavesFreq);
+    b.y += waves(b,uWavesStrengh,uWavesFreq);
+    float yWaves = waves(modelPosition.xyz,uWavesStrengh,uWavesFreq);
     
-    modelPosition.y += yElevation;    
+    modelPosition.y += yWaves;    
 
     vec3 toA = normalize(a - modelPosition.xyz);
     vec3 toB = normalize(b - modelPosition.xyz);
 
 
     vNormal=cross(toA,toB);
-    vElevation = yElevation;
+    vElevation = yWaves;
         
     
     
