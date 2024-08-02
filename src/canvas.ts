@@ -33,7 +33,7 @@ export default class Canvas {
     this.addEventListeners()
     this.createDebug()
     this.createSea()
-    this.createBoat()
+    //this.createBoat()
     this.createHelpers()
     this.render()
   }

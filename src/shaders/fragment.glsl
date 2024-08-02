@@ -1,10 +1,13 @@
-uniform vec3 uColor;
+uniform vec3 uColorA;
+uniform vec3 uColorB;
 varying vec3 vNormal;
+varying float vElevation;
 
 void main()
-{
+{        
+    float elevation = smoothstep(-1.,1.,vElevation);
 
-    vec3 normal = normalize(vNormal)*0.5 + 0.5;//!! rember to reapply this transformation when retrieving the normals texture
-    
-    gl_FragColor = vec4(normal, 1.0);
+    vec3 mixColor = mix(uColorA,uColorB,elevation);
+
+    gl_FragColor = vec4(mixColor, 1.0);
 }

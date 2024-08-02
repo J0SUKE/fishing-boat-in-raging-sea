@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import vertexShader from '../shaders/vertex.glsl'
 import fragmentShader from '../shaders/fragment.glsl'
 import normalFragmentShader from '../shaders/normalFragment.glsl'
+import ComputeNormals from '../utils/normal-compute'
 
 interface Props {
   scene: THREE.Scene
@@ -17,10 +18,7 @@ export default class Sea {
   mesh: THREE.Mesh
   verticesCount: number
   renderer: THREE.WebGLRenderer
-
-  //normal
-  normalRenderTarget: THREE.WebGLRenderTarget
-  normalMaterial: THREE.ShaderMaterial
+  computeNormals: ComputeNormals
 
   constructor({ scene, renderer, camera }: Props) {
     this.scene = scene
@@ -31,9 +29,7 @@ export default class Sea {
     this.createGeometry()
     this.createMaterial()
     this.createMesh()
-
-    this.createNormalRenderTarget()
-    this.createNormalMaterial()
+    this.createComputeNormals()
   }
 
   createGeometry() {
@@ -43,10 +39,11 @@ export default class Sea {
   createMaterial() {
     this.material = new THREE.ShaderMaterial({
       vertexShader,
-      fragmentShader,
+      fragmentShader: normalFragmentShader,
       side: THREE.DoubleSide,
       uniforms: {
-        uColor: new THREE.Uniform(new THREE.Color('#0d7bd0')),
+        uColorA: new THREE.Uniform(new THREE.Color('#0d7bd0')),
+        uColorB: new THREE.Uniform(new THREE.Color('#2cc5d6')),
         uTime: new THREE.Uniform(0),
       },
     })
@@ -58,22 +55,18 @@ export default class Sea {
     this.scene.add(this.mesh)
   }
 
-  //normal
-  createNormalMaterial() {
-    this.normalMaterial = new THREE.ShaderMaterial({
-      vertexShader: vertexShader,
-      fragmentShader: normalFragmentShader,
-    })
-  }
-
-  createNormalRenderTarget() {
-    this.normalRenderTarget = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight, {
-      format: THREE.RGBAFormat,
-      type: THREE.FloatType,
+  createComputeNormals() {
+    this.computeNormals = new ComputeNormals({
+      scene: this.scene,
+      renderer: this.renderer,
+      verticesCount: this.verticesCount,
+      geometry: this.geometry,
     })
   }
 
   render(time: number) {
     this.material.uniforms.uTime.value = time
+
+    this.computeNormals.render(time)
   }
 }
