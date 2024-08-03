@@ -1,5 +1,4 @@
 #include ./perlin-classic-3d.glsl
-//#include ./simplex-noise-4d.glsl
 
 float waves(vec3 position,float wavesStrengh,vec2 wavesFreq)
 {
@@ -18,13 +17,3 @@ float waves(vec3 position,float wavesStrengh,vec2 wavesFreq)
 
     return elevation;
 }
-
-
-// float waves(vec3 position,vec2 wavesStrengh,vec2 wavesFreq)
-// {
-//     float xWaves = sin(-position.x*wavesFreq.x - uTime)*wavesStrengh.x;
-//     float zWaves = sin(-position.z*wavesFreq.y - uTime)*wavesStrengh.y;
-    
-//     return xWaves;
- 
-// }

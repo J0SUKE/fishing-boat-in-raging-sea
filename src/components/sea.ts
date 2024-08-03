@@ -58,7 +58,7 @@ export default class Sea {
         uColorB: new THREE.Uniform(new THREE.Color('#2cc5d6')),
         uTime: new THREE.Uniform(0),
         uWavesStrengh: new THREE.Uniform(0.4),
-        uWavesFreq: new THREE.Uniform(new THREE.Vector2(1, 0)),
+        uWavesFreq: new THREE.Uniform(new THREE.Vector2(1, 0.4)),
       },
       transparent: true,
       depthWrite: false,
