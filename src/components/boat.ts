@@ -9,16 +9,25 @@ export default class Boat {
   scene: THREE.Scene
   loader: GLTFLoader
   model: THREE.Group
+  barycenters: THREE.Vector3[]
 
   constructor({ scene }: Props) {
     this.scene = scene
     this.createLoader()
     this.createLights()
+    this.createBarycenters()
     this.loadModel()
   }
 
   createLoader() {
     this.loader = new GLTFLoader()
+  }
+
+  createBarycenters() {
+    const frontBarycenter = new THREE.Vector3(1, 0.4, 0) // Front barycenter
+    const centerBarycenter = new THREE.Vector3(0, 0.2, 0) // Front barycenter
+    const rearBarycenter = new THREE.Vector3(-1, 0.2, 0) // Front barycenter
+    this.barycenters = [frontBarycenter, centerBarycenter, rearBarycenter]
   }
 
   createLights() {
@@ -35,27 +44,31 @@ export default class Boat {
       gltf.scene.scale.set(0.002, 0.002, 0.002)
       gltf.scene.position.set(0, 0.35, 0)
 
-      gltf.scene.traverse((child) => {
-        if ('isMesh' in child && child.isMesh && child instanceof THREE.Mesh) {
-          //console.log(child.material)
-          if (child.material.map) child.material.map.colorSpace = THREE.SRGBColorSpace
-        }
-      })
       this.model = gltf.scene
       this.scene.add(this.model)
+      //this.model.renderOrder = 1
     })
   }
 
-  render(force: THREE.Vector3, strength: number) {
+  render(force: THREE.Vector3, elevation: number, strengh: number) {
     if (this.model) {
       const quaternion = new THREE.Quaternion()
 
-      // We want to rotate from the object's default up vector (typically Y-up)
-      // to our new direction vector
+      // Calculate rotation
       quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), force)
 
-      this.model.position.y = 0.35 + strength
-      this.model.setRotationFromQuaternion(quaternion)
+      // Reset the model's rotation and position
+      this.model.position.set(0, 0, 0)
+      this.model.rotation.set(0, 0, 0)
+
+      for (let i = 0; i < 3; i++) {
+        this.model.position.sub(this.barycenters[i])
+        this.model.applyQuaternion(quaternion)
+        this.model.position.add(this.barycenters[i])
+      }
+
+      // Adjust position
+      this.model.position.y += 0.35 + elevation
     }
   }
 }

@@ -69,6 +69,7 @@ export default class Canvas {
     this.renderer.setPixelRatio(this.dimensions.pixelRatio)
 
     this.renderer.outputColorSpace = THREE.SRGBColorSpace
+    //this.renderer.localClippingEnabled = false
     //this.renderer.toneMapping = THREE.ACESFilmicToneMapping
   }
 
@@ -150,8 +151,9 @@ export default class Canvas {
 
     this.sea.render(this.time)
     const force = this.sea.computeNormals.getNormalResult()
-    const strength = this.sea.computeNormals.getMedianElevation()
-    this.boat?.render(force, strength)
+    const elevation = this.sea.computeNormals.getMedianElevation()
+    const strengh = this.sea.getWavesStrengh()
+    this.boat?.render(force, elevation, strengh)
 
     this.renderer.render(this.scene, this.camera)
   }

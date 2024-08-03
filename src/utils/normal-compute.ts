@@ -103,8 +103,8 @@ export default class ComputeNormals {
     let elevations = 0
 
     const pixelsCount = pixelData.length / 4
-    const start = Math.floor(pixelsCount * 0)
-    const end = Math.floor(pixelsCount * 1)
+    const start = Math.floor(pixelsCount * 0.3)
+    const end = Math.floor(pixelsCount * 0.7)
 
     const normalsArray = new Float32Array(pixelsCount * 3)
     const elevationsArray = new Float32Array(pixelsCount)
@@ -113,19 +113,20 @@ export default class ComputeNormals {
       const i4 = i * 4
       const i3 = i * 3
 
-      // Convert from [0, 1] to [-1, 1]
+      elevations += pixelData[i4 + 3]
+
       const x = (normalsArray[i3] = (pixelData[i4] - 0.5) * 2)
       const y = (normalsArray[i3 + 1] = (pixelData[i4 + 1] - 0.5) * 2)
       const z = (normalsArray[i3 + 2] = (pixelData[i4 + 2] - 0.5) * 2)
 
-      elevationsArray[i] = pixelData[i4 + 3]
-
-      //elevations.push(pixelData[i4 + 3])
       if (i > start && i < end) {
-        elevations += pixelData[i4 + 3]
+        this.normalResult.add(new THREE.Vector3(x, y, z).multiplyScalar(3))
+      } else {
+        this.normalResult.add(new THREE.Vector3(x, y, z))
       }
 
-      this.normalResult.add(new THREE.Vector3(x, y, z))
+      // Convert from [0, 1] to [-1, 1]
+      elevationsArray[i] = pixelData[i4 + 3]
     }
 
     this.normals = new THREE.BufferAttribute(normalsArray, 3)
@@ -144,7 +145,7 @@ export default class ComputeNormals {
   getMedianElevation() {
     const strengh = this.normalMaterial.uniforms.uWavesStrengh.value
 
-    return this.medianElevation * 2 + Math.pow(strengh, 3)
+    return this.medianElevation + Math.pow(strengh, Math.ceil(strengh) * 3)
   }
 
   /*

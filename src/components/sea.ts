@@ -68,9 +68,10 @@ export default class Sea {
   setupDebug() {
     this.debug.add(this.material.uniforms.uWavesStrengh, 'value').min(0.1).max(0.6).step(0.001).name('waves Strengh')
 
-    this.debug.add(this.material.uniforms.uWavesFreq.value, 'x').min(0).max(3).step(0.1).name('X waves Frequency')
-    this.debug.addColor(this.material.uniforms.uColorA, 'value')
-    this.debug.addColor(this.material.uniforms.uColorB, 'value')
+    //this.debug.add(this.material.uniforms.uWavesFreq.value, 'x').min(0.5).max(1).step(0.1).name('X waves Frequency')
+    //this.debug.add(this.material.uniforms.uWavesFreq.value, 'y').min(0.5).max(1).step(0.1).name('Z waves Frequency')
+    //this.debug.addColor(this.material.uniforms.uColorA, 'value')
+    //this.debug.addColor(this.material.uniforms.uColorB, 'value')
   }
 
   createMesh() {
@@ -108,6 +109,10 @@ export default class Sea {
     this.waterContainer.position.y -= 0.5
 
     this.scene.add(this.waterContainer)
+  }
+
+  getWavesStrengh() {
+    return this.material.uniforms.uWavesStrengh.value
   }
 
   render(time: number) {
