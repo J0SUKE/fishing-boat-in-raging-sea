@@ -1,6 +1,5 @@
 uniform vec3 uColorA;
 uniform vec3 uColorB;
-varying vec3 vNormal;
 varying vec2 vElevation;
 uniform float uWavesStrengh;
 uniform float uTime;
@@ -15,7 +14,6 @@ void main()
     float elevation = 0.;
     vec3 color = vec3(0.);
     float foam = 0.;
-    vec3 normal = normalize(vNormal);
 
     if(abs(vPosition.x)<2.5 && abs(vPosition.z)<2.5)
     {
