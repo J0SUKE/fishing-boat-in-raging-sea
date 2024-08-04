@@ -1,6 +1,6 @@
 varying vec3 vNormal;
 uniform float uTime;
-varying float vElevation;
+varying vec2 vElevation;
 varying vec3 vPosition;
 
 uniform float uWavesStrengh;
@@ -27,11 +27,11 @@ void main()
         b.z -= shift;
         
 
-        a.y += waves(a,uWavesStrengh,uWavesFreq);
-        b.y += waves(b,uWavesStrengh,uWavesFreq);
-        float yWaves = waves(modelPosition.xyz,uWavesStrengh,uWavesFreq);
+        a.y += waves(a,uWavesStrengh,uWavesFreq).x;
+        b.y += waves(b,uWavesStrengh,uWavesFreq).x;
+        vec2 yWaves = waves(modelPosition.xyz,uWavesStrengh,uWavesFreq);
         
-        modelPosition.y += yWaves;    
+        modelPosition.y += yWaves.x;    
 
         vec3 toA = normalize(a - modelPosition.xyz);
         vec3 toB = normalize(b - modelPosition.xyz);
@@ -41,7 +41,7 @@ void main()
         vElevation = yWaves;   
     }
     else{
-        vElevation=0.;
+        vElevation.x=0.;
     } 
         
     
