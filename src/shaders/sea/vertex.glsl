@@ -17,10 +17,8 @@ void main()
     
     if(position.y>-0.5)
     {        
-        vec2 yWaves = waves(modelPosition.xyz,uWavesStrengh,uWavesFreq);
-        
+        vec2 yWaves = waves(modelPosition.xyz,uWavesStrengh,uWavesFreq);        
         modelPosition.y += yWaves.x;    
-
         vElevation = yWaves;   
     }
     else{
