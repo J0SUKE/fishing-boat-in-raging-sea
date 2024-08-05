@@ -43,9 +43,9 @@ export default class ComputeNormals {
   normalGeometry: THREE.PlaneGeometry
   size: Size
   normalResult: THREE.Vector3
+  normals3Barycenters: THREE.Vector3[]
+
   medianElevation: number
-  normals: THREE.BufferAttribute
-  elevations: THREE.BufferAttribute
 
   //debug canvas
   debugCanvas: HTMLCanvasElement
@@ -53,6 +53,7 @@ export default class ComputeNormals {
 
   //debug normalVector
   normalLine: THREE.Line | null
+  normalLines: THREE.Line[] | null
 
   constructor({ scene, renderer, geometry, uniforms }: Props) {
     this.scene = scene
@@ -71,6 +72,7 @@ export default class ComputeNormals {
     this.createNormalScene()
     //this.createDebugPlane()
     //this.createDebugCanvas()
+    this.normals3Barycenters = [new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0)]
   }
 
   createNormalRenderTarget() {
@@ -99,53 +101,61 @@ export default class ComputeNormals {
 
   computeNormalsResult(pixelData: Float32Array) {
     this.normalResult = new THREE.Vector3(0, 0, 0)
-    //const elevations = []
-    let elevations = 0
+    let elevation = 0
 
     const pixelsCount = pixelData.length / 4
-    const start = Math.floor(pixelsCount * 0.3)
-    const end = Math.floor(pixelsCount * 0.7)
+    const half = Math.floor(pixelsCount * 0.5)
+    const start = Math.floor(pixelsCount * (1 / 3))
+    const end = Math.floor(pixelsCount * (2 / 3))
 
     const normalsArray = new Float32Array(pixelsCount * 3)
-    const elevationsArray = new Float32Array(pixelsCount)
 
     for (let i = 0; i < pixelsCount; i++) {
       const i4 = i * 4
       const i3 = i * 3
 
-      elevations += pixelData[i4 + 3]
+      const col = (i % this.size.width) * this.size.height
+      const row = Math.floor(i / this.size.width) * this.size.height
+
+      if (col > start && col < end && row > start && row < end) {
+        elevation += pixelData[i4 + 3]
+      }
 
       const x = (normalsArray[i3] = (pixelData[i4] - 0.5) * 2)
       const y = (normalsArray[i3 + 1] = (pixelData[i4 + 1] - 0.5) * 2)
       const z = (normalsArray[i3 + 2] = (pixelData[i4 + 2] - 0.5) * 2)
 
-      if (i > start && i < end) {
-        this.normalResult.add(new THREE.Vector3(x, y, z).multiplyScalar(3))
+      if (col >= 0 && col < half) {
+        this.normals3Barycenters[0].add(new THREE.Vector3(x, y, z))
       } else {
-        this.normalResult.add(new THREE.Vector3(x, y, z))
+        this.normals3Barycenters[2].add(new THREE.Vector3(x, y, z))
       }
 
-      // Convert from [0, 1] to [-1, 1]
-      elevationsArray[i] = pixelData[i4 + 3]
+      this.normals3Barycenters[1].add(new THREE.Vector3(x, y, z))
+      this.normalResult.add(new THREE.Vector3(x, y, z))
     }
 
-    this.normals = new THREE.BufferAttribute(normalsArray, 3)
-    this.elevations = new THREE.BufferAttribute(elevationsArray, 1)
-
     //this.medianElevation = calculateMedian(elevations)
-    this.medianElevation = elevations / (end - start)
+    this.medianElevation = elevation / ((end - start) * 0.5)
 
     this.normalResult.normalize()
+    this.normals3Barycenters.forEach((vector) => {
+      vector.normalize()
+    })
   }
 
   getNormalResult() {
     return this.normalResult
   }
 
+  getNormal3Barycentres() {
+    return this.normals3Barycenters
+  }
+
   getMedianElevation() {
     const strengh = this.normalMaterial.uniforms.uWavesStrengh.value
 
-    return this.medianElevation + Math.pow(strengh, Math.ceil(strengh) * 3)
+    return this.medianElevation + Math.pow(strengh, Math.ceil(strengh) * 4.5)
   }
 
   /*
@@ -223,45 +233,80 @@ export default class ComputeNormals {
   updateNormalCanvas = (pixelData: Float32Array) => {
     const imageData = this.debugCanvasContext.createImageData(this.size.width, this.size.height)
 
-    for (let i = 0; i < pixelData.length / 4; i++) {
+    const pixelsCount = pixelData.length / 4
+    const half = Math.floor(pixelsCount * 0.5)
+    const third = Math.floor(pixelsCount * 0.4)
+    const twoThirds = Math.floor(pixelsCount * 0.6)
+
+    for (let i = 0; i < pixelsCount; i++) {
       // Convert from [0, 1] to [0, 255]
-      imageData.data[i * 4] = pixelData[i * 4] * 255
-      imageData.data[i * 4 + 1] = pixelData[i * 4 + 1] * 255
-      imageData.data[i * 4 + 2] = pixelData[i * 4 + 2] * 255
-      imageData.data[i * 4 + 3] = 255 // Alpha channel
+      const i4 = i * 4
+
+      const col = (i % this.size.width) * this.size.height
+      const row = Math.floor(i / this.size.width) * this.size.height
+
+      imageData.data[i4] = pixelData[i * 4] * 255
+      imageData.data[i4 + 1] = pixelData[i * 4 + 1] * 255
+      imageData.data[i4 + 2] = pixelData[i * 4 + 2] * 255
+      imageData.data[i4 + 3] = 255
     }
 
     this.debugCanvasContext.clearRect(0, 0, this.size.width, this.size.height)
     this.debugCanvasContext.putImageData(imageData, 0, 0)
   }
 
-  getNormals() {
-    return this.normals
-  }
-  getElevations() {
-    return this.elevations
-  }
   /*
    *Visualize Normal Result
    */
-  drawNormalResult() {
-    if (this.normalLine) {
-      this.normalLine.geometry.dispose()
-      if (this.normalLine.material instanceof THREE.Material) this.normalLine.material.dispose()
-      this.scene.remove(this.normalLine)
-      this.normalLine = null
+  drawNormalsResult() {
+    if (this.normalLines) {
+      this.normalLines.forEach((line) => {
+        line.geometry.dispose()
+        if (line.material instanceof THREE.Material) line.material.dispose()
+        this.scene.remove(line)
+      })
+      this.normalLines = null
     }
 
-    const points = []
-    points.push(new THREE.Vector3(0, 0, 0))
-    points.push(this.normalResult.multiplyScalar(2))
+    const frontBarycenter = new THREE.Vector3(1, 0.4, 0) // Front barycenter
+    const centerBarycenter = new THREE.Vector3(0, 0.2, 0) // Front barycenter
+    const rearBarycenter = new THREE.Vector3(-1, 0.2, 0) // Front barycenter
+    const barycenters = [rearBarycenter, centerBarycenter, frontBarycenter]
 
-    const geometry = new THREE.BufferGeometry().setFromPoints(points)
-    const material = new THREE.LineBasicMaterial({ color: 'white' })
+    this.normalLines = []
 
-    this.normalLine = new THREE.Line(geometry, material)
-    this.scene.add(this.normalLine)
+    for (let i = 0; i < this.normals3Barycenters.length; i++) {
+      const points = []
+      points.push(barycenters[i])
+      points.push(this.normals3Barycenters[i].multiplyScalar(2))
+
+      const geometry = new THREE.BufferGeometry().setFromPoints(points)
+      const material = new THREE.LineBasicMaterial({ color: 'white' })
+
+      this.normalLines.push(new THREE.Line(geometry, material))
+
+      this.scene.add(this.normalLines[i])
+    }
   }
+
+  // drawNormalResult() {
+  //   if (this.normalLine) {
+  //     this.normalLine.geometry.dispose()
+  //     if (this.normalLine.material instanceof THREE.Material) this.normalLine.material.dispose()
+  //     this.scene.remove(this.normalLine)
+  //     this.normalLine = null
+  //   }
+
+  //   const points = []
+  //   points.push(new THREE.Vector3(0, 0, 0))
+  //   points.push(this.normalResult.multiplyScalar(2))
+
+  //   const geometry = new THREE.BufferGeometry().setFromPoints(points)
+  //   const material = new THREE.LineBasicMaterial({ color: 'white' })
+
+  //   this.normalLine = new THREE.Line(geometry, material)
+  //   this.scene.add(this.normalLine)
+  // }
 
   render(time: number) {
     this.normalMaterial.uniforms.uTime.value = time
@@ -274,7 +319,7 @@ export default class ComputeNormals {
     this.computeNormalsResult(pixelData)
     //this.updateNormalCanvas(pixelData)
 
-    this.drawNormalResult()
+    //this.drawNormalsResult()
 
     this.renderer.setRenderTarget(null)
   }

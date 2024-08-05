@@ -39,11 +39,15 @@ export default class Sea {
 
   createSurfaceGeometry() {
     this.surfaceGeometry = new THREE.PlaneGeometry(5, 5, 128, 128)
+    this.surfaceGeometry.deleteAttribute('normal')
+    this.surfaceGeometry.deleteAttribute('uv')
   }
 
   createGeometry() {
     const { width, height, widthSegments, heightSegments } = this.surfaceGeometry.parameters
     this.geometry = new THREE.BoxGeometry(width, 1, height, widthSegments, 1, heightSegments)
+    this.geometry.deleteAttribute('normal')
+    this.geometry.deleteAttribute('uv')
   }
 
   createMaterial() {
@@ -55,7 +59,7 @@ export default class Sea {
         uColorB: new THREE.Uniform(new THREE.Color('#2cc5d6')),
         uTime: new THREE.Uniform(0),
         uWavesStrengh: new THREE.Uniform(0.4),
-        uWavesFreq: new THREE.Uniform(new THREE.Vector2(1, 0.4)),
+        uWavesFreq: new THREE.Uniform(new THREE.Vector2(1, 0.5)),
       },
       depthWrite: false,
       transparent: true,

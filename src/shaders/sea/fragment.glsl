@@ -15,14 +15,15 @@ void main()
     vec3 color = vec3(0.);
     float foam = 0.;
 
+
     if(abs(vPosition.x)<2.5 && abs(vPosition.z)<2.5)
     {
         elevation = smoothstep(-uWavesStrengh,uWavesStrengh,vElevation.x);
-        foam+=smoothstep(0.8,1.,elevation)*0.1;
+        foam+=smoothstep(0.5,0.8,elevation)*0.1;
 
         float smallWavesElevation = smoothstep(0.,uWavesStrengh*0.75,vElevation.y);
-        //foam+=(1.-smoothstep(0.,0.025,smallWavesElevation))*0.3;
-        foam+=(1.-step(0.025,smallWavesElevation))*0.3;
+        foam+=(1.-step(0.02,smallWavesElevation));
+        foam*=0.2;
     }
     else{
         elevation = smoothstep(-0.5,uWavesStrengh,vPosition.y);
