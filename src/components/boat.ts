@@ -27,7 +27,7 @@ export default class Boat {
     const frontBarycenter = new THREE.Vector3(1, 0.4, 0) // Front barycenter
     const centerBarycenter = new THREE.Vector3(0, 0.2, 0) // Front barycenter
     const rearBarycenter = new THREE.Vector3(-1, 0.2, 0) // Front barycenter
-    this.barycenters = [frontBarycenter, centerBarycenter, rearBarycenter]
+    this.barycenters = [rearBarycenter, centerBarycenter, frontBarycenter]
   }
 
   createLights() {
@@ -50,18 +50,18 @@ export default class Boat {
     })
   }
 
-  render(force: THREE.Vector3, elevation: number, strengh: number) {
+  render(forces: THREE.Vector3[], elevation: number, strengh: number) {
     if (this.model) {
-      const quaternion = new THREE.Quaternion()
-
       // Calculate rotation
-      quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), force)
 
       // Reset the model's rotation and position
       this.model.position.set(0, 0, 0)
       this.model.rotation.set(0, 0, 0)
 
       for (let i = 0; i < 3; i++) {
+        const quaternion = new THREE.Quaternion()
+        quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), forces[i])
+
         this.model.position.sub(this.barycenters[i])
         this.model.applyQuaternion(quaternion)
         this.model.position.add(this.barycenters[i])
