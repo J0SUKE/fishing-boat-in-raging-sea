@@ -10,25 +10,6 @@ interface Props {
   uniforms: Uniforms
 }
 
-function calculateMedian(arr: number[]) {
-  if (!Array.isArray(arr) || arr.length === 0) {
-    throw new Error('The input should be a non-empty array')
-  }
-
-  // Sort the array in ascending order
-  arr.sort((a, b) => a - b)
-
-  const mid = Math.floor(arr.length / 2)
-
-  // If the array length is odd, return the middle element
-  if (arr.length % 2 !== 0) {
-    return arr[mid]
-  }
-
-  // If the array length is even, return the average of the two middle elements
-  return (arr[mid - 1] + arr[mid]) / 2
-}
-
 export default class ComputeNormals {
   scene: THREE.Scene
   renderer: THREE.WebGLRenderer
