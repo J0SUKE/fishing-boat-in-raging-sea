@@ -35,7 +35,7 @@ export default class Canvas {
     this.createDebug()
     this.createSea()
     this.createBoat()
-    this.createHelpers()
+    //this.createHelpers()
     this.render()
   }
 
@@ -150,10 +150,10 @@ export default class Canvas {
     this.orbitControls.update()
 
     this.sea.render(this.time)
-    const force = this.sea.computeNormals.getNormalResult()
+    const forces = this.sea.computeNormals.getNormal3Barycentres()
     const elevation = this.sea.computeNormals.getMedianElevation()
     const strengh = this.sea.getWavesStrengh()
-    this.boat?.render(force, elevation, strengh)
+    this.boat?.render(forces, elevation, strengh)
 
     this.renderer.render(this.scene, this.camera)
   }
