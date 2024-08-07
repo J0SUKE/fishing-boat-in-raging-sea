@@ -23,7 +23,6 @@ export default class ComputeNormals {
 
   normalGeometry: THREE.PlaneGeometry
   size: Size
-  normalResult: THREE.Vector3
   normals3Barycenters: THREE.Vector3[]
 
   medianElevation: number
@@ -33,7 +32,6 @@ export default class ComputeNormals {
   debugCanvasContext: CanvasRenderingContext2D
 
   //debug normalVector
-  normalLine: THREE.Line | null
   normalLines: THREE.Line[] | null
 
   constructor({ scene, renderer, geometry, uniforms }: Props) {
@@ -46,8 +44,6 @@ export default class ComputeNormals {
       width: this.normalGeometry.parameters.widthSegments,
       height: this.normalGeometry.parameters.heightSegments,
     }
-
-    this.normalResult = new THREE.Vector3(0, 0, 0)
 
     this.createNormalRenderTarget()
     this.createNormalScene()
@@ -81,7 +77,6 @@ export default class ComputeNormals {
   }
 
   computeNormalsResult(pixelData: Float32Array) {
-    this.normalResult = new THREE.Vector3(0, 0, 0)
     let elevation = 0
 
     const pixelsCount = pixelData.length / 4
@@ -113,20 +108,14 @@ export default class ComputeNormals {
       }
 
       this.normals3Barycenters[1].add(new THREE.Vector3(x, y, z))
-      this.normalResult.add(new THREE.Vector3(x, y, z))
     }
 
     //this.medianElevation = calculateMedian(elevations)
     this.medianElevation = elevation / ((end - start) * 0.5)
 
-    this.normalResult.normalize()
     this.normals3Barycenters.forEach((vector) => {
       vector.normalize()
     })
-  }
-
-  getNormalResult() {
-    return this.normalResult
   }
 
   getNormal3Barycentres() {
@@ -269,25 +258,6 @@ export default class ComputeNormals {
       this.scene.add(this.normalLines[i])
     }
   }
-
-  // drawNormalResult() {
-  //   if (this.normalLine) {
-  //     this.normalLine.geometry.dispose()
-  //     if (this.normalLine.material instanceof THREE.Material) this.normalLine.material.dispose()
-  //     this.scene.remove(this.normalLine)
-  //     this.normalLine = null
-  //   }
-
-  //   const points = []
-  //   points.push(new THREE.Vector3(0, 0, 0))
-  //   points.push(this.normalResult.multiplyScalar(2))
-
-  //   const geometry = new THREE.BufferGeometry().setFromPoints(points)
-  //   const material = new THREE.LineBasicMaterial({ color: 'white' })
-
-  //   this.normalLine = new THREE.Line(geometry, material)
-  //   this.scene.add(this.normalLine)
-  // }
 
   render(time: number) {
     this.normalMaterial.uniforms.uTime.value = time
